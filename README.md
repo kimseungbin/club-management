@@ -6,6 +6,14 @@ To run locally, use Docker Compose.
 docker compose up
 ```
 
+# Tech Stacks
+
+| Name          | Category | Note |
+|---------------|----------|------|
+| Web Framework | NestJS   |      |
+| ORM           | TypeORM  |      |
+|               |          |      |
+
 # Designing Concerns
 
 ## Database
