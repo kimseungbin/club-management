@@ -16,6 +16,74 @@ docker compose up
 
 # Designing Concerns
 
+## NestJS
+
+List of NestJS techniques used in the project.
+
+<details>
+<summary>Configuration Service</summary>
+
+1. Custom Config Files
+2. Configuration Namespaces and Partial Registration
+
+NestJS ConfigModule supports the management of complex and nested configuration files through "namespaced" configuration
+objects, using the `registerAs()` function. This method improves clarity and facilitates the handling of intricate
+configuration setups.
+
+Consider the following TypeScript code where databaseConfig is created as a namespaced configuration object:
+
+```TypeScript
+import { registerAs } from '@nestjs/config'
+import * as process from 'process'
+
+export default registerAs('database', () => ({
+	host: process.env.DB_HOST || 'database',
+	port: +process.env.DB_PORT || 5432,
+	database: process.env.DB_NAME || 'postgres',
+	username: process.env.DB_USERNAME || 'postgres',
+	password: process.env.DB_PASSWORD || 'postgres',
+}))
+```
+
+```TypeScript
+@Module({
+	imports: [ConfigModule.forRoot({
+		load: [databaseConfig],
+	}),
+		TypeOrmModule.forRootAsync({
+			imports: [ConfigModule.forFeature(databaseConfig)],
+			inject: [databaseConfig.KEY],
+			useFactory: async (databaseConfiguration: ConfigType<typeof databaseConfig>) => ({
+				type: 'postgres',
+				host: databaseConfiguration.host,
+				port: databaseConfiguration.port,
+				username: databaseConfiguration.username,
+				password: databaseConfiguration.password,
+				database: databaseConfiguration.database,
+				entities: ['dist/**/*.entity.js'],
+				synchronize: true,
+				namingStrategy: new SnakeNamingStrategy(),
+			}),
+		})],
+	controllers: [AppController],
+	providers: [AppService],
+})
+export class AppModule {
+}
+```
+
+Here, the forRoot method of the ConfigModule loads the configuration. Then, the forRootAsync and forFeature functions in
+the TypeOrmModule and ConfigModule, respectively, are used for asynchronous method handling while injecting the defined
+configuration. The databaseConfig.KEY constant, provided by registerAs(), gives access to the entire 'database'
+configuration object. It is worth noting that the useFactory method receives a strongly-typed ConfigType representing
+the databaseConfig.
+
+This approach provides partial registration of configuration, enhancing modularization by associating each dedicated
+configuration file with its specific feature module. Relatability between configuration and their specific feature
+modules is thereby enforced—facilitating improved readability, understanding, and maintainability of the project.
+
+</details>
+
 ## Database
 
 The application have four main entities: `Meetings`, `Members`, `Attendance Records` (attendance), and `Topics`.
