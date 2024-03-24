@@ -1,6 +1,5 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Description: Main resource template for club-management app.
-Transform: AWS::LanguageExtensions
 Parameters:
   ProjectName:
     Type: String
