@@ -5,10 +5,11 @@ import { ConfigModule, ConfigType } from '@nestjs/config'
 import databaseConfig from './config/database.config'
 import { TypeOrmModule } from '@nestjs/typeorm'
 import { SnakeNamingStrategy } from 'typeorm-naming-strategies'
+import generalConfig from './config/general.config'
 
 @Module({
 	imports: [ConfigModule.forRoot({
-		load: [databaseConfig],
+		load: [generalConfig, databaseConfig],
 	}),
 		TypeOrmModule.forRootAsync({
 			imports: [ConfigModule.forFeature(databaseConfig)],
