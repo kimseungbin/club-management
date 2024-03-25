@@ -6,6 +6,11 @@ import databaseConfig from './config/database.config'
 import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm'
 import { SnakeNamingStrategy } from 'typeorm-naming-strategies'
 import generalConfig from './config/general.config'
+import { APP_INTERCEPTOR } from '@nestjs/core'
+import { LoggingInterceptor } from './common/interceptors/logging/logging.interceptor'
+import { MembersService } from './members/members.service'
+import { MembersController } from './members/members.controller'
+import { MembersModule } from './members/members.module'
 
 @Module({
 	imports: [ConfigModule.forRoot({
@@ -39,6 +44,11 @@ import generalConfig from './config/general.config'
 		})],
 	controllers: [AppController],
 	providers: [AppService],
+	providers: [AppService,
+		{
+			provide: APP_INTERCEPTOR,
+			useClass: LoggingInterceptor,
+		},
 })
 export class AppModule {
 }
