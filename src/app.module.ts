@@ -24,6 +24,9 @@ import generalConfig from './config/general.config'
 				entities: ['dist/**/*.entity.js'],
 				synchronize: true,
 				namingStrategy: new SnakeNamingStrategy(),
+				ssl: {
+					rejectUnauthorized: false,
+				},
 			}),
 		})],
 	controllers: [AppController],
