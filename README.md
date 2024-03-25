@@ -6,6 +6,23 @@ To run locally, use Docker Compose.
 docker compose up
 ```
 
+# How to Deploy
+
+## Prerequisites
+
+1. AWS CLI
+2. Docker
+
+## Steps
+
+1. Create CloudFormation stack with `infra/cloudformation.yaml` by a preferred option.
+    1. [CLI](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-cfn-cli-creating-stack.html)
+    2. [Console](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/cfn-console-create-stack.html)
+    3. [Git sync](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/git-sync.html)
+2. While the stack is in creation, wait for ECR resource to be created.
+3. When ECR is created, create docker image and push it to ECR
+   repository. [Pushing a Docker image](https://docs.aws.amazon.com/AmazonECR/latest/userguide/docker-push-ecr-image.html)
+
 # Tech Stacks
 
 | Name          | Category | Note |
