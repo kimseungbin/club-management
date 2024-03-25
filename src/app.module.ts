@@ -41,14 +41,15 @@ import { MembersModule } from './members/members.module'
 
 				return { ...option }
 			},
-		})],
-	controllers: [AppController],
-	providers: [AppService],
+		}),
+		MembersModule],
+	controllers: [AppController, MembersController],
 	providers: [AppService,
 		{
 			provide: APP_INTERCEPTOR,
 			useClass: LoggingInterceptor,
 		},
+		MembersService],
 })
 export class AppModule {
 }

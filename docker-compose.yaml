@@ -9,6 +9,8 @@ services:
         condition: service_healthy
     environment:
       STAGE: development
+    ports:
+      - "3000:3000"
   database:
     image: postgres:15
     restart: always
