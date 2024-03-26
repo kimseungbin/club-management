@@ -1,9 +1,10 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common'
+import { Injectable } from '@nestjs/common'
 import { CreateMemberDto } from './dto/create-member.dto'
 import { UpdateMemberDto } from './dto/update-member.dto'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Member } from './entities/member.entity'
 import { Repository } from 'typeorm'
+import { NoContentException } from '../common/exceptions/no-content.exception'
 
 @Injectable()
 export class MembersService {
@@ -21,7 +22,7 @@ export class MembersService {
 		const members = await this.memberRepository.find()
 
 		if (members.length === 0) {
-			throw new HttpException('No Content', HttpStatus.NO_CONTENT)
+			throw new NoContentException(Member.name)
 		}
 		return members
 	}
