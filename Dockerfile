@@ -12,4 +12,5 @@ WORKDIR /usr/src/app
 COPY package*.json ./
 RUN npm ci
 COPY --from=build /usr/src/app/dist ./
+COPY src/client ./client
 CMD node main.js

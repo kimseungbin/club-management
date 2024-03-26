@@ -1,6 +1,4 @@
 import { Module } from '@nestjs/common'
-import { AppController } from './app.controller'
-import { AppService } from './app.service'
 import { ConfigModule, ConfigType } from '@nestjs/config'
 import databaseConfig from './config/database.config'
 import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm'
@@ -9,13 +7,16 @@ import generalConfig from './config/general.config'
 import { APP_INTERCEPTOR } from '@nestjs/core'
 import { LoggingInterceptor } from './common/interceptors/logging/logging.interceptor'
 import { MembersModule } from './members/members.module'
+import { ServeStaticModule } from '@nestjs/serve-static'
+import { join } from 'path'
+
 
 @Module({
 	imports: [ConfigModule.forRoot({
 		load: [generalConfig, databaseConfig],
 	}),
 		TypeOrmModule.forRootAsync({
-			imports: [ConfigModule.forFeature(generalConfig), ConfigModule.forFeature(databaseConfig)],
+			imports: [ConfigModule.forFeature(generalConfig), ConfigModule.forFeature(databaseConfig), ServeStaticModule.forRoot({ rootPath: join(__dirname, 'client') })],
 			inject: [generalConfig.KEY, databaseConfig.KEY],
 			useFactory: async (generalConfiguration: ConfigType<typeof generalConfig>, databaseConfiguration: ConfigType<typeof databaseConfig>) => {
 				const option: TypeOrmModuleOptions = {
@@ -41,8 +42,8 @@ import { MembersModule } from './members/members.module'
 			},
 		}),
 		MembersModule],
-	controllers: [AppController],
-	providers: [AppService,
+	controllers: [],
+	providers: [
 		{
 			provide: APP_INTERCEPTOR,
 			useClass: LoggingInterceptor,
