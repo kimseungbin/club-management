@@ -8,8 +8,6 @@ import { SnakeNamingStrategy } from 'typeorm-naming-strategies'
 import generalConfig from './config/general.config'
 import { APP_INTERCEPTOR } from '@nestjs/core'
 import { LoggingInterceptor } from './common/interceptors/logging/logging.interceptor'
-import { MembersService } from './members/members.service'
-import { MembersController } from './members/members.controller'
 import { MembersModule } from './members/members.module'
 
 @Module({
@@ -27,7 +25,7 @@ import { MembersModule } from './members/members.module'
 					username: databaseConfiguration.username,
 					password: databaseConfiguration.password,
 					database: databaseConfiguration.database,
-					entities: ['dist/**/*.entity.js'],
+					entities: [__dirname + '/../**/*.entity.{js,ts}'],
 					synchronize: true,
 					namingStrategy: new SnakeNamingStrategy(),
 				}
@@ -43,13 +41,13 @@ import { MembersModule } from './members/members.module'
 			},
 		}),
 		MembersModule],
-	controllers: [AppController, MembersController],
+	controllers: [AppController],
 	providers: [AppService,
 		{
 			provide: APP_INTERCEPTOR,
 			useClass: LoggingInterceptor,
 		},
-		MembersService],
+	],
 })
 export class AppModule {
 }
