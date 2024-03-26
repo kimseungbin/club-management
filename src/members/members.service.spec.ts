@@ -3,7 +3,7 @@ import { MembersService } from './members.service'
 import { Repository } from 'typeorm'
 import { getRepositoryToken } from '@nestjs/typeorm'
 import { Member } from './entities/member.entity'
-import { HttpException } from '@nestjs/common'
+import { NoContentException } from '../common/exceptions/no-content.exception'
 
 type MockRepository<T = any> = Partial<Record<keyof Repository<T>, jest.Mock>>
 const createMockRepository = <T = any>(): MockRepository<T> => ({
@@ -43,7 +43,7 @@ describe('MembersService', () => {
 				const want = []
 				memberRepository.find.mockResolvedValue(want)
 
-				await expect(service.findAll()).rejects.toThrow(HttpException)
+				await expect(service.findAll()).rejects.toThrow(NoContentException)
 			})
 		})
 		describe('otherwise', () => {
