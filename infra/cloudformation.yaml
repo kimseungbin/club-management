@@ -13,6 +13,10 @@ Parameters:
     Type: String
     Description: The URI of the ECR repository. If it is not provided, then Cfn creates new ECR Repository resource.
     Default: ""
+
+Conditions:
+  IsECRRepositoryURIBlank: !Equals [ !Ref ECRRepositoryURI, "" ]
+
 Resources:
   VPC:
     Type: AWS::EC2::VPC
