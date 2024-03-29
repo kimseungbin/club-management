@@ -238,6 +238,7 @@ Resources:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
     Properties:
       HealthCheckEnabled: true
+      HealthCheckPath: /health
       HealthCheckPort: 80
       HealthCheckProtocol: HTTP
       Port: 80
