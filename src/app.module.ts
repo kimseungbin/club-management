@@ -9,6 +9,7 @@ import { LoggingInterceptor } from './common/interceptors/logging/logging.interc
 import { MembersModule } from './members/members.module'
 import { ServeStaticModule } from '@nestjs/serve-static'
 import { join } from 'path'
+import { HealthController } from './health/health.controller'
 
 
 @Module({
@@ -42,7 +43,7 @@ import { join } from 'path'
 			},
 		}),
 		MembersModule],
-	controllers: [],
+	controllers: [HealthController],
 	providers: [
 		{
 			provide: APP_INTERCEPTOR,
