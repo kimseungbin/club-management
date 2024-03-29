@@ -187,6 +187,7 @@ Resources:
 
   EcrRepository:
     Type: AWS::ECR::Repository
+    Condition: IsECRRepositoryURIBlank
     Properties:
       LifecyclePolicy:
         LifecyclePolicyText: |
@@ -296,10 +297,14 @@ Resources:
       ContainerDefinitions:
         - Name: !Ref ProjectName
           Image:
-            Fn::Join:
-              - ':'
-              - - !GetAtt [ EcrRepository, RepositoryUri ]
-                - latest
+            # If Repository URI is blank, use newly created Repository resource. If not, then use provided URI.
+            Fn::If:
+              - IsECRRepositoryURIBlank
+              - Fn::Join:
+                  - ':'
+                  - - !GetAtt [ EcrRepository, RepositoryUri ]
+                    - latest
+              - !Ref ECRRepositoryURI
           LogConfiguration:
             LogDriver: awslogs
             Options:
