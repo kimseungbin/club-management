@@ -368,3 +368,24 @@ Resources:
       DBSubnetGroupName: !Ref DBSubnetGroup
       DBName: postgres
 
+  # ------------------------------------------------------------#
+  # Authentication
+  # ------------------------------------------------------------#
+
+  UserPool:
+    Type: AWS::Cognito::UserPool
+    Properties:
+      AccountRecoverySetting:
+        RecoveryMechanisms:
+          - Name: verified_phone_number
+            Priority: 1
+      DeviceConfiguration:
+        ChallengeRequiredOnNewDevice: true
+        DeviceOnlyRememberedOnUserPrompt: false
+  UserPoolClient:
+    Type: AWS::Cognito::UserPoolClient
+    Properties:
+      AccessTokenValidity: 10
+      ClientName: !Ref ProjectName
+      UserPoolId: !Ref UserPool
+
