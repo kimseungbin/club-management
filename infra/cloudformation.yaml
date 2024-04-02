@@ -321,6 +321,8 @@ Resources:
               Value: !GetAtt [ DBInstance, Endpoint.Address ]
             - Name: PORT
               Value: 80
+            - Name: COGNITO_CLIENT_ID
+              Value: !GetAtt [ UserPoolClient, ClientId ]
   ServiceSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
