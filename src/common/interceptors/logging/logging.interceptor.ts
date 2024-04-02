@@ -1,7 +1,7 @@
 import { CallHandler, ExecutionContext, Inject, Injectable, Logger, NestInterceptor } from '@nestjs/common'
 import { Observable, tap } from 'rxjs'
 import { ConfigType } from '@nestjs/config'
-import generalConfig from '../../../config/general.config'
+import generalConfig from '../../../configs/general.config'
 
 @Injectable()
 export class LoggingInterceptor implements NestInterceptor {

@@ -1,15 +1,16 @@
 import { Module } from '@nestjs/common'
 import { ConfigModule, ConfigType } from '@nestjs/config'
-import databaseConfig from './config/database.config'
+import databaseConfig from './configs/database.config'
 import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm'
 import { SnakeNamingStrategy } from 'typeorm-naming-strategies'
-import generalConfig from './config/general.config'
+import generalConfig from './configs/general.config'
 import { APP_INTERCEPTOR } from '@nestjs/core'
 import { LoggingInterceptor } from './common/interceptors/logging/logging.interceptor'
 import { MembersModule } from './members/members.module'
 import { ServeStaticModule } from '@nestjs/serve-static'
 import { join } from 'path'
 import { HealthController } from './health/health.controller'
+import { ConfigsController } from './configs/configs.controller'
 
 
 @Module({
