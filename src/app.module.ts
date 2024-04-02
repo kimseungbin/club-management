@@ -44,7 +44,7 @@ import { ConfigsController } from './configs/configs.controller'
 			},
 		}),
 		MembersModule],
-	controllers: [HealthController],
+	controllers: [HealthController, ConfigsController],
 	providers: [
 		{
 			provide: APP_INTERCEPTOR,
