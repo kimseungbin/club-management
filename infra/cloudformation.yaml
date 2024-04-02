@@ -319,6 +319,8 @@ Resources:
           Environment:
             - Name: DB_HOST
               Value: !GetAtt [ DBInstance, Endpoint.Address ]
+            - Name: PORT
+              Value: 80
   ServiceSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
