@@ -403,7 +403,6 @@ Resources:
   UserPoolClient:
     Type: AWS::Cognito::UserPoolClient
     Properties:
-      AccessTokenValidity: 10
       ClientName: !Ref ProjectName
       UserPoolId: !Ref UserPool
       CallbackURLs:
@@ -414,6 +413,7 @@ Resources:
         - 'implicit'
       AllowedOAuthScopes:
         - 'email'
+        - 'openid'
       SupportedIdentityProviders:
         - 'COGNITO'
       AllowedOAuthFlowsUserPoolClient: true
@@ -422,7 +422,60 @@ Resources:
         IdToken: days
         AccessToken: days
         RefreshToken: days
-        IdTokenValidity: 1
-        AccessTokenValidity: 1
-        RefreshTokenValidity: 30
-
+      IdTokenValidity: 1
+      AccessTokenValidity: 1
+      RefreshTokenValidity: 30
+  # The identity pool handle user's access to AWS resources like S3 directly using AWS API with its own authentication system (IAM).
+  IdentityPool:
+    Type: AWS::Cognito::IdentityPool
+    Properties:
+      IdentityPoolName: !Ref ProjectName
+      AllowUnauthenticatedIdentities: false
+      CognitoIdentityProviders:
+        - ClientId: !Ref UserPoolClient
+          ProviderName: !GetAtt [ UserPool, ProviderName ]
+  # cf. https://daaru.medium.com/cognito-hosted-ui-with-cloudformation-8993fc878a4f
+  CognitoAuthorizedRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName:
+        Fn::Join:
+          - '-'
+          - - !Ref ProjectName
+            - cognito
+            - authorized
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: 'Allow'
+            Principal:
+              Federated: 'cognito-identity.amazonaws.com'
+            Action:
+              - 'sts:AssumeRoleWithWebIdentity'
+            Condition:
+              'StringEquals':
+                'cognito-identity.amazonaws.com:aud': !Ref IdentityPool
+              'ForAnyValue:StringLike':
+                'cognito-identity.amazonaws.com:amr': authenticated
+      Policies:
+        - PolicyName:
+            Fn::Join:
+              - '-'
+              - - !Ref ProjectName
+                - cognito
+                - authorized
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  # Todo. Dummy actions. Update this to actual S3 bucket for files
+                  - 'cognito-sync:*'
+                  - 'cognito-identity:*'
+                Resource: '*'
+  IdentityPoolRoleMapping:
+    Type: AWS::Cognito::IdentityPoolRoleAttachment
+    Properties:
+      IdentityPoolId: !Ref IdentityPool
+      Roles:
+        authenticated: !GetAtt [ CognitoAuthorizedRole, Arn ]
