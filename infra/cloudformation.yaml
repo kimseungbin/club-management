@@ -406,4 +406,23 @@ Resources:
       AccessTokenValidity: 10
       ClientName: !Ref ProjectName
       UserPoolId: !Ref UserPool
+      CallbackURLs:
+        - 'http://localhost:3000/'
+      LogoutURLs:
+        - 'http://localhost:3000/'
+      AllowedOAuthFlows:
+        - 'implicit'
+      AllowedOAuthScopes:
+        - 'email'
+      SupportedIdentityProviders:
+        - 'COGNITO'
+      AllowedOAuthFlowsUserPoolClient: true
+      GenerateSecret: false # enabling this will break the frontend sign in
+      TokenValidityUnits:
+        IdToken: days
+        AccessToken: days
+        RefreshToken: days
+        IdTokenValidity: 1
+        AccessTokenValidity: 1
+        RefreshTokenValidity: 30
 
