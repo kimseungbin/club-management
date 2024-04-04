@@ -239,6 +239,16 @@ Resources:
       SecurityGroups:
         - !Ref ApplicationLoadBalancerSecurityGroup
       IpAddressType: ipv4
+  ALBRecordSet:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneName: !Sub ${HostedZoneName}.
+      Comment: ALB DNS record
+      Name: !Sub www.${HostedZoneName}
+      Type: A
+      AliasTarget:
+        HostedZoneId: !GetAtt [ ApplicationLoadBalancer, CanonicalHostedZoneID ]
+        DNSName: !GetAtt [ ApplicationLoadBalancer, DNSName ]
   TargetGroup:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
     Properties:
