@@ -18,7 +18,12 @@ Parameters:
     Description: The name of the DNS zone e.g., domain.com
     AllowedPattern: "(?=.+)(?=^.{1,253}$)(^(((?!-)[a-zA-Z0-9-]{0,62}[a-zA-Z0-9])\\.)*((?!-)[a-zA-Z0-9]{1,63}))$"
     ConstraintDescription: Must be a valid DNS zone name.
-
+  CognitoCustomDomainCertificateArn:
+    Type: String
+    Description: The ARN of Cognito Custom Domain Certificate created in us-east-1 region.
+  CognitoCustomDomain:
+    Type: String
+    Description: The custom domain name for Cognito. Suggest auth.[HOSTED_ZONE_NAME] e.g., auth.domain.com
 Conditions:
   IsECRRepositoryURIBlank: !Equals [ !Ref ECRRepositoryURI, "" ]
 
@@ -239,16 +244,22 @@ Resources:
       SecurityGroups:
         - !Ref ApplicationLoadBalancerSecurityGroup
       IpAddressType: ipv4
-  ALBRecordSet:
-    Type: AWS::Route53::RecordSet
+  ALBRecordSetGroup:
+    Type: AWS::Route53::RecordSetGroup
     Properties:
       HostedZoneName: !Sub ${HostedZoneName}.
       Comment: ALB DNS record
-      Name: !Sub www.${HostedZoneName}
-      Type: A
-      AliasTarget:
-        HostedZoneId: !GetAtt [ ApplicationLoadBalancer, CanonicalHostedZoneID ]
-        DNSName: !GetAtt [ ApplicationLoadBalancer, DNSName ]
+      RecordSets:
+        - Name: !Ref HostedZoneName
+          Type: A
+          AliasTarget:
+            HostedZoneId: !GetAtt [ ApplicationLoadBalancer, CanonicalHostedZoneID ]
+            DNSName: !GetAtt [ ApplicationLoadBalancer, DNSName ]
+        - Name: !Sub www.${HostedZoneName}
+          Type: A
+          AliasTarget:
+            HostedZoneId: !GetAtt [ ApplicationLoadBalancer, CanonicalHostedZoneID ]
+            DNSName: !GetAtt [ ApplicationLoadBalancer, DNSName ]
   TargetGroup:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
     Properties:
@@ -422,9 +433,9 @@ Resources:
       ClientName: !Ref ProjectName
       UserPoolId: !Ref UserPool
       CallbackURLs:
-        - 'http://localhost:3000/'
+        - 'https://www.snle.net'
       LogoutURLs:
-        - 'http://localhost:3000/'
+        - 'https://www.snle.net'
       AllowedOAuthFlows:
         - 'implicit'
       AllowedOAuthScopes:
@@ -497,18 +508,18 @@ Resources:
         authenticated: !GetAtt [ CognitoAuthorizedRole, Arn ]
   UserPoolDomain:
     Type: AWS::Cognito::UserPoolDomain
+    DependsOn:
+      - ALBRecordSetGroup
     Properties:
       UserPoolId: !Ref UserPool
-      Domain: "snle-auth"
+      Domain: !Ref CognitoCustomDomain
+      CustomDomainConfig:
+        CertificateArn: !Ref CognitoCustomDomainCertificateArn
   HostedUICustomDomain:
     Type: AWS::Route53::RecordSet
     Properties:
       HostedZoneName: !Sub ${HostedZoneName}.
-      Name:
-        Fn::Join:
-          - '.'
-          - - auth
-            - !Sub ${HostedZoneName}.
+      Name: !Sub ${CognitoCustomDomain}.
       Type: A
       # AliasTarget is used to point our domain to another AWS resource.
       # In this case, it's the CloudFront distribution for the Cognito domain.
