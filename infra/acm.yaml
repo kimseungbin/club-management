@@ -1,0 +1,17 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: ACM related resources template. Must be deployed in US-EAST-1 region.
+Parameters:
+  HostedZoneId:
+    Type: String
+    Description: The ID of the DNS zone.
+  CognitoCustomDomain:
+    Type: String
+    Description: The custom domain name for Cognito. Suggest auth.[HOSTED_ZONE_NAME] e.g., auth.domain.com
+Resources:
+  CognitoCustomDomainCertificate:
+    Type: AWS::CertificateManager::Certificate
+    Properties:
+      DomainName: !Ref CognitoCustomDomain
+      DomainValidationOptions:
+        - DomainName: !Ref CognitoCustomDomain
+          HostedZoneId: !Ref HostedZoneId
