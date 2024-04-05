@@ -19,9 +19,14 @@ docker compose up
     1. [CLI](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-cfn-cli-creating-stack.html)
     2. [Console](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/cfn-console-create-stack.html)
     3. [Git sync](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/git-sync.html)
-2. While the stack is in creation, wait for ECR resource to be created.
-3. When ECR is created, create docker image and push it to ECR
-   repository. [Pushing a Docker image](https://docs.aws.amazon.com/AmazonECR/latest/userguide/docker-push-ecr-image.html)
+2. ECR Repository
+   1. If a repository is already created, input its URI into the parameter when specifying stack details.
+   2. If there is no repository, leave ECRRepositoryURI part blank. It will create a new repository. While the stack is
+      in creation, wait for the ECr resource to be created. Then, push image to the repository to continue stack
+      creation. [Pushing a Docker image](https://docs.aws.amazon.com/AmazonECR/latest/userguide/docker-push-ecr-image.html)
+3. ACM Certificate
+   1. Cognito Custom Domain requires ACM. During the stack creation, validation email will be sent to the account owner.
+      It must be approved to continue the stack creation.
 
 # Tech Stacks
 
