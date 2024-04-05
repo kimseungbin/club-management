@@ -18,6 +18,9 @@ Parameters:
     Description: The name of the DNS zone e.g., domain.com
     AllowedPattern: "(?=.+)(?=^.{1,253}$)(^(((?!-)[a-zA-Z0-9-]{0,62}[a-zA-Z0-9])\\.)*((?!-)[a-zA-Z0-9]{1,63}))$"
     ConstraintDescription: Must be a valid DNS zone name.
+  HostedZoneId:
+    Type: String
+    Description: The ID of the DNS zone.
   CognitoCustomDomainCertificateArn:
     Type: String
     Description: The ARN of Cognito Custom Domain Certificate created in us-east-1 region.
@@ -271,6 +274,13 @@ Resources:
       Protocol: HTTP
       TargetType: ip
       VpcId: !Ref VPC
+  RootCertificate:
+    Type: AWS::CertificateManager::Certificate
+    Properties:
+      DomainName: !Ref HostedZoneName
+      DomainValidationOptions:
+        - DomainName: !Ref HostedZoneName
+          HostedZoneId: !Ref HostedZoneId
   Listener:
     Type: AWS::ElasticLoadBalancingV2::Listener
     Properties:
