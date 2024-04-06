@@ -303,6 +303,8 @@ Resources:
       DomainValidationOptions:
         - DomainName: !Ref HostedZoneName
           HostedZoneId: !Ref HostedZoneId
+      SubjectAlternativeNames:
+        - !Sub www.${HostedZoneName}
   Listener:
     Type: AWS::ElasticLoadBalancingV2::Listener
     Properties:
