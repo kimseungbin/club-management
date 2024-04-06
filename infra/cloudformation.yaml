@@ -27,6 +27,28 @@ Parameters:
   CognitoCustomDomain:
     Type: String
     Description: The custom domain name for Cognito. Suggest auth.[HOSTED_ZONE_NAME] e.g., auth.domain.com
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      - Label:
+          default: General Configuration
+        Parameters:
+          - ProjectName
+      - Label:
+          default: Network Configuration
+        Parameters:
+          - VpcCidr
+      - Label:
+          default: Container Configuration
+        Parameters:
+          - ECRRepositoryURI
+      - Label:
+          default: Domain Configuration
+        Parameters:
+          - HostedZoneName
+          - HostedZoneId
+          - CognitoCustomDomainCertificateArn
+          - CognitoCustomDomain
 Conditions:
   IsECRRepositoryURIBlank: !Equals [ !Ref ECRRepositoryURI, "" ]
 
