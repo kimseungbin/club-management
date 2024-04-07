@@ -306,6 +306,7 @@ Resources:
           HostedZoneId: !Ref HostedZoneId
       SubjectAlternativeNames:
         - !Sub www.${HostedZoneName}
+      ValidationMethod: DNS
   Listener:
     Type: AWS::ElasticLoadBalancingV2::Listener
     Properties:
