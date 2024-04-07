@@ -84,7 +84,10 @@ Resources:
       MapPublicIpOnLaunch: true
       Tags:
         - Key: Name
-          Value: !Sub ${ProjectName}-public-1
+          Value:
+            Fn::Sub:
+              - ${ProjectName}-public-1
+              - ProjectName: !Ref ProjectName
   PublicSubnet2:
     Type: AWS::EC2::Subnet
     Properties:
@@ -94,7 +97,11 @@ Resources:
       MapPublicIpOnLaunch: true
       Tags:
         - Key: Name
-          Value: !Sub ${ProjectName}-public-2
+          Value:
+            Fn::Sub:
+              - ${ProjectName}-public-2
+              - ProjectName: !Ref ProjectName
+
   PublicRouteTable:
     Type: AWS::EC2::RouteTable
     Properties:
@@ -128,7 +135,10 @@ Resources:
       AvailabilityZone: !Select [ 0, Fn::GetAZs: !Ref AWS::Region ]
       Tags:
         - Key: Name
-          Value: !Sub ${ProjectName}-app-1
+          Value:
+            Fn::Sub:
+              - ${ProjectName}-app-1
+              - ProjectName: !Ref ProjectName
   AppSubnet2:
     Type: AWS::EC2::Subnet
     Properties:
@@ -137,7 +147,10 @@ Resources:
       AvailabilityZone: !Select [ 1, Fn::GetAZs: !Ref AWS::Region ]
       Tags:
         - Key: Name
-          Value: !Sub ${ProjectName}-app-2
+          Value:
+            Fn::Sub:
+              - ${ProjectName}-app-2
+              - ProjectName: !Ref ProjectName
   DbSubnet1:
     Type: AWS::EC2::Subnet
     Properties:
@@ -146,7 +159,10 @@ Resources:
       AvailabilityZone: !Select [ 0, Fn::GetAZs: !Ref AWS::Region ]
       Tags:
         - Key: Name
-          Value: !Sub ${ProjectName}-db-1
+          Value:
+            Fn::Sub:
+              - ${ProjectName}-db-1
+              - ProjectName: !Ref ProjectName
   DbSubnet2:
     Type: AWS::EC2::Subnet
     Properties:
@@ -155,7 +171,10 @@ Resources:
       AvailabilityZone: !Select [ 1, Fn::GetAZs: !Ref AWS::Region ]
       Tags:
         - Key: Name
-          Value: !Sub ${ProjectName}-db-2
+          Value:
+            Fn::Sub:
+              - ${ProjectName}-db-2
+              - ProjectName: !Ref ProjectName
   NatGateway1EIP:
     Type: AWS::EC2::EIP
     DependsOn: GatewayAttachment
@@ -273,7 +292,10 @@ Resources:
   ALBRecordSetGroup:
     Type: AWS::Route53::RecordSetGroup
     Properties:
-      HostedZoneName: !Sub ${HostedZoneName}.
+      HostedZoneName:
+        Fn::Sub:
+          - ${HostedZoneName}.
+          - HostedZoneName: !Ref HostedZoneName
       Comment: ALB DNS record
       RecordSets:
         - Name: !Ref HostedZoneName
@@ -281,7 +303,10 @@ Resources:
           AliasTarget:
             HostedZoneId: !GetAtt [ ApplicationLoadBalancer, CanonicalHostedZoneID ]
             DNSName: !GetAtt [ ApplicationLoadBalancer, DNSName ]
-        - Name: !Sub www.${HostedZoneName}
+        - Name:
+            Fn::Sub:
+              - www.${HostedZoneName}
+              - HostedZoneName: !Ref HostedZoneName
           Type: A
           AliasTarget:
             HostedZoneId: !GetAtt [ ApplicationLoadBalancer, CanonicalHostedZoneID ]
@@ -305,7 +330,9 @@ Resources:
         - DomainName: !Ref HostedZoneName
           HostedZoneId: !Ref HostedZoneId
       SubjectAlternativeNames:
-        - !Sub www.${HostedZoneName}
+        - Fn::Sub:
+            - www.${HostedZoneName}
+            - HostedZoneName: !Ref HostedZoneName
       ValidationMethod: DNS
   HttpsListener:
     Type: AWS::ElasticLoadBalancingV2::Listener
@@ -575,7 +602,10 @@ Resources:
   HostedUICustomDomain:
     Type: AWS::Route53::RecordSet
     Properties:
-      HostedZoneName: !Sub ${HostedZoneName}.
+      HostedZoneName:
+        Fn::Sub:
+          - ${HostedZoneName}.
+          - HostedZoneName: !Ref HostedZoneName
       Name:
         Fn::Join:
           - '.'
