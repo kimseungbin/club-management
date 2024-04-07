@@ -628,6 +628,13 @@ Resources:
         # This is always the hosted zone ID when you create an alias record that routes traffic to a CloudFront distribution.
         HostedZoneId: Z2FDTNDATAQYW2
 
+  # ------------------------------------------------------------#
+  # CI/CD
+  # ------------------------------------------------------------#
+
+  ArtifactStore:
+    Type: AWS::S3::Bucket
+
   CodeStarConnection:
     Type: AWS::CodeStarConnections::Connection
     Properties:
