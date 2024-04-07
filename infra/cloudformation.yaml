@@ -307,16 +307,33 @@ Resources:
       SubjectAlternativeNames:
         - !Sub www.${HostedZoneName}
       ValidationMethod: DNS
-  Listener:
+  HttpsListener:
     Type: AWS::ElasticLoadBalancingV2::Listener
     Properties:
+      LoadBalancerArn: !Ref ApplicationLoadBalancer
       DefaultActions:
         - Order: 1
           TargetGroupArn: !Ref TargetGroup
           Type: forward
+      Port: 443
+      Protocol: HTTPS
+      Certificates:
+        - CertificateArn: !Ref RootCertificate
+  HttpListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
       LoadBalancerArn: !Ref ApplicationLoadBalancer
       Port: 80
       Protocol: HTTP
+      DefaultActions:
+        - Type: redirect
+          RedirectConfig:
+            Protocol: HTTPS
+            Port: 443
+            StatusCode: HTTP_301
+            Host: "#{host}"
+            Path: "/#{path}"
+            Query: "#{query}"
   # Execution role gives the ECs container agent the needed permissions to make AWs API calls.
   # These permissions are necessary for the agent to, for instance, pull a Docker container image from ECR, or to publish logs to CloudWatch
   ExecutionRole:
