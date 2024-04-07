@@ -23,10 +23,11 @@ Parameters:
     Description: The ID of the DNS zone.
   CognitoCustomDomainCertificateArn:
     Type: String
-    Description: The ARN of Cognito Custom Domain Certificate created in us-east-1 region.
-  CognitoCustomDomain:
+    Description: The ARN of Cognito Custom Domain Certificate created in us-east-1 region. It is created in that region because all certificates using CloudFront must be in that region.
+  CognitoCustomSubDomain:
     Type: String
     Description: The custom domain name for Cognito. Suggest auth.[HOSTED_ZONE_NAME] e.g., auth.domain.com
+    Default: auth
 Metadata:
   AWS::CloudFormation::Interface:
     ParameterGroups:
@@ -48,7 +49,7 @@ Metadata:
           - HostedZoneName
           - HostedZoneId
           - CognitoCustomDomainCertificateArn
-          - CognitoCustomDomain
+          - CognitoCustomSubDomain
 Conditions:
   IsECRRepositoryURIBlank: !Equals [ !Ref ECRRepositoryURI, "" ]
 
@@ -546,14 +547,22 @@ Resources:
       - ALBRecordSetGroup
     Properties:
       UserPoolId: !Ref UserPool
-      Domain: !Ref CognitoCustomDomain
+      Domain:
+        Fn::Join:
+          - '.'
+          - - !Ref CognitoCustomSubDomain
+            - !Ref HostedZoneName
       CustomDomainConfig:
         CertificateArn: !Ref CognitoCustomDomainCertificateArn
   HostedUICustomDomain:
     Type: AWS::Route53::RecordSet
     Properties:
       HostedZoneName: !Sub ${HostedZoneName}.
-      Name: !Sub ${CognitoCustomDomain}.
+      Name:
+        Fn::Join:
+          - '.'
+          - - !Ref CognitoCustomSubDomain
+            - !Ref HostedZoneName
       Type: A
       # AliasTarget is used to point our domain to another AWS resource.
       # In this case, it's the CloudFront distribution for the Cognito domain.
