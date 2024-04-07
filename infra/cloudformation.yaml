@@ -332,6 +332,7 @@ Resources:
       VpcId: !Ref VPC
   RootCertificate:
     Type: AWS::CertificateManager::Certificate
+
     Properties:
       DomainName: !Ref HostedZoneName
       DomainValidationOptions:
@@ -640,3 +641,150 @@ Resources:
     Properties:
       ConnectionName: !Ref CodeStarConnectionName
       ProviderType: GitHub
+
+  PipelineRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: codepipeline.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: CodePipelinePolicy
+          PolicyDocument:
+            Statement:
+              - Effect: Allow
+                Action:
+                  - codepipeline:*
+                  - s3:GetObject
+                  - s3:GetObjectVersion
+                  - s3:GetBucketVersioning
+                  - s3:PutObject
+                Resource:
+                  - Fn::Sub:
+                      - "arn:aws:s3:::${BucketName}"
+                      - BucketName: !Ref ArtifactStore
+                  - Fn::Sub:
+                      - "arn:aws:s3:::${BucketName}/*"
+                      - BucketName: !Ref ArtifactStore
+              - Effect: Allow
+                Action:
+                  - Iam:PassRole
+                Resource: "*" # Todo Can be further restricted.
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: "*" # Todo Can be further restricted.
+              - Effect: Allow
+                Action:
+                  - elasticloadbalancing:*
+                  - ec2:CreateSecurityGroup
+                  - ec2:Describe*
+                Resource: "*"
+              - Effect: Allow
+                Action:
+                  - ecs:*
+                Resource:
+                  Fn::Sub:
+                    - "arn:aws:ecs:${AWS::Region}:${AWS::AccountId}:service/${EcsServiceName}"
+                    - EcsServiceName: !Ref Service
+              - Effect: Allow
+                Action:
+                  - codestar-connections:UseConnection
+                # Todo use parameter for this
+                Resource: !Ref CodeStarConnection
+  CodeBuildRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: codebuild.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: CodeBuildPolicy
+          PolicyDocument:
+            Statement:
+              # Allow the CodeBuild to get all the versions of all the buckets.
+              - Effect: Allow
+                Action:
+                  - s3:ListAllByBuckets
+                  - s3:GetBucketVersioning
+                Resource: "*"
+              # Allow the CodeBuild to perform CRUD (Create, Read, Update, Delete) operations in the ArtifactStore bucket.
+              - Effect: Allow
+                Action:
+                  - s3:GetObject
+                  - s3:PutObject
+                  - s3:DeleteObject
+                Resource:
+                  Fn::Sub:
+                    - arn:aws:s3:::${BucketName}/*
+                    - BucketName: !Ref ArtifactStore
+              # Allow the CodeBuild to push Images to the EcrRepository in ECR.
+              # https://docs.aws.amazon.com/AmazonECR/latest/userguide/image-push.html#image-push-iam
+              - Effect: Allow
+                Action:
+                  - ecr:BatchCheckLayerAvailability
+                  - ecr:GetDownloadUrlForLayer
+                  - ecr:GetBatchGetImage
+                  - ecr:UploadLayerPart
+                  - ecr:CompleteLayerUpload
+                  - ecr:PutImage
+                  - ecr:InitiateLayerUpload
+                Resource:
+                  Fn::Sub:
+                    - arn:aws:ecr:${AWS::Region}:${AWS::AccountId}:repository/${EcrRepository}
+                    - EcrRepository:
+                        Fn::If:
+                          - IsECRRepositoryURIBlank
+                          - !Ref EcrRepository
+                          - !Ref ECRRepositoryURI
+              - Effect: Allow
+                Action:
+                  - ecr:GetAuthorizationToken
+                Resource: "*"
+              # Allow the CodeBuild to perform actions with AWS CLI
+              - Effect: Allow
+                Action:
+                  - iam:GetUser
+                Resource: "*"
+              # Allow creating logs
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogStream
+                  - logs:CreateLogGroup
+                  - logs:PutLogEvents
+                Resource: "*"
+  CodeBuildProject:
+    Type: AWS::CodeBuild::Project
+    Properties:
+      Artifacts:
+        Type: CODEPIPELINE
+      Cache:
+        Type: LOCAL
+        Location: LOCAL
+        Modes:
+          - LOCAL_SOURCE_CACHE
+          - LOCAL_DOCKER_LAYER_CACHE
+      Environment:
+        ComputeType: BUILD_GENERAL1_SMALL
+        EnvironmentVariables:
+          - Name: ECR_LOGIN_URL
+            Type: PLAINTEXT
+            Value: !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com
+          - Name: ECR_REPOSITORY_URI
+            Type: PLAINTEXT
+            Value: !GetAtt [ EcrRepository, RepositoryUri ]
+        Image: aws/codebuild/standard:7.0
+        Type: LINUX_CONTAINER
+      Name: !Ref AWS::StackName
+      ServiceRole: !Ref CodeBuildRole
+      Source:
+        BuildSpec: ./infra/buildspec.yaml
+        Type: CODEPIPELINE
