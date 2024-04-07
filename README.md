@@ -27,6 +27,11 @@ docker compose up
 3. ACM Certificate
    1. Cognito Custom Domain requires ACM. During the stack creation, validation email will be sent to the account owner.
       It must be approved to continue the stack creation.
+4. CodeStar Connection
+   1. CloudFormation will only create a `pending` status connection.
+   2. Visit AWS console > Developer Tools > Connections > created connection > update pending connection > connect to
+      GitHub
+   3. If no GitHub app is previously installed, install a new one.
 
 # Tech Stacks
 

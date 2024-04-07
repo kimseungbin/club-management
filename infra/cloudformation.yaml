@@ -28,6 +28,10 @@ Parameters:
     Type: String
     Description: The custom domain name for Cognito. Suggest auth.[HOSTED_ZONE_NAME] e.g., auth.domain.com
     Default: auth
+  CodeStarConnectionName:
+    Type: String
+    Description: The name for CodeStar connection to GitHub repository.
+    Default: club
 Metadata:
   AWS::CloudFormation::Interface:
     ParameterGroups:
@@ -50,6 +54,10 @@ Metadata:
           - HostedZoneId
           - CognitoCustomDomainCertificateArn
           - CognitoCustomSubDomain
+      - Label:
+          default: CI/CD
+        Parameters:
+          - CodeStarConnectionName
 Conditions:
   IsECRRepositoryURIBlank: !Equals [ !Ref ECRRepositoryURI, "" ]
 
@@ -619,3 +627,9 @@ Resources:
         EvaluateTargetHealth: false
         # This is always the hosted zone ID when you create an alias record that routes traffic to a CloudFront distribution.
         HostedZoneId: Z2FDTNDATAQYW2
+
+  CodeStarConnection:
+    Type: AWS::CodeStarConnections::Connection
+    Properties:
+      ConnectionName: !Ref CodeStarConnectionName
+      ProviderType: GitHub
