@@ -799,6 +799,10 @@ Resources:
                   - codestar-connections:UseConnection
                 # Todo use parameter for this
                 Resource: !Ref CodeStarConnection
+              - Effect: Allow
+                Action:
+                  - codebuild:StartBuild
+                Resource: !GetAtt [ CodeBuildProject, Arn ]
   CodeBuildRole:
     Type: AWS::IAM::Role
     Properties:
