@@ -890,7 +890,7 @@ Resources:
               Fn::If:
                 - IsECRRepositoryURIBlank
                 - !GetAtt [ EcrRepository, RepositoryUri ]
-                - IsECRRepositoryURIBlank
+                - !Ref ECRRepositoryURI
         Image: aws/codebuild/standard:7.0
         Type: LINUX_CONTAINER
       Name: !Ref AWS::StackName
