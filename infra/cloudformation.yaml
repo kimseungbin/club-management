@@ -36,6 +36,12 @@ Parameters:
     Type: String
     Description: The name for CodeStar connection to GitHub repository.
     Default: club
+  FullRepositoryId:
+    Type: String
+    Description: The full repository ID.
+    AllowedPattern: "[A-Za-z0-9\\-]+/[A-Za-z0-9\\-_]+"
+    ConstraintDescription: Must be in the format 'owner/repository' with only alphanumeric characters, hyphens, and underscores.
+    Default: kimseungbin/club-management
 Metadata:
   AWS::CloudFormation::Interface:
     ParameterGroups:
@@ -888,3 +894,46 @@ Resources:
       Source:
         BuildSpec: ./infra/buildspec.yaml
         Type: CODEPIPELINE
+  Pipeline:
+    Type: AWS::CodePipeline::Pipeline
+    Properties:
+      ArtifactStore:
+        Location: !Ref ArtifactStore
+        Type: S3
+      RoleArn: !GetAtt [ PipelineRole, Arn ]
+      PipelineType: V2
+      Stages:
+        - Name: Source
+          Actions:
+            - Name: GetSource
+              ActionTypeId:
+                Category: Source
+                Owner: AWS
+                Version: 1
+                Provider: CodeStarSourceConnection
+              OutputArtifacts:
+                - Name: SourceArtifact
+              Configuration:
+                ConnectionArn: !Ref CodeStarConnection
+                FullRepositoryId: !Ref FullRepositoryId
+                BranchName: main
+              RunOrder: 1
+        - Name: ManualApproval # Dummy stage to test the previous stage.
+          Actions:
+            - Name: ManualApproval
+              ActionTypeId:
+                Category: Approval
+                Owner: AWS
+                Provider: Manual
+                Version: 1
+      Triggers:
+        - ProviderType: CodeStarSourceConnection
+          GitConfiguration:
+            Push:
+              - FilePaths:
+                  Includes:
+                    - 'src/**'
+                Branches:
+                  Includes:
+                    - main
+            SourceActionName: GetSource
