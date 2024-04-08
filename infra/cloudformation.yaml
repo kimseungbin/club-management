@@ -13,6 +13,10 @@ Parameters:
     Type: String
     Description: The URI of the ECR repository. If it is not provided, then Cfn creates new ECR Repository resource.
     Default: ""
+  MaxContainers:
+    Type: Number
+    Description: The maximum number of containers that the auto-scaling policy is allowed to deploy.
+    Default: 2
   HostedZoneName:
     Type: String
     Description: The name of the DNS zone e.g., domain.com
@@ -47,6 +51,7 @@ Metadata:
           default: Container Configuration
         Parameters:
           - ECRRepositoryURI
+          - MaxContainers
       - Label:
           default: Domain Configuration
         Parameters:
@@ -472,6 +477,94 @@ Resources:
             - !Ref AppSubnet2
 
   # Todo add autoscaling
+
+  # ------------------------------------------------------------#
+  # Auto-Scaling
+  # ------------------------------------------------------------#
+
+  AutoScalingRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - ecs-tasks.amazonaws.com
+            Action:
+              - 'sts:AssumeRole'
+      Policies:
+        - PolicyName: ecs-permissions
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - ecs:DescribeServices
+                  - ecs:UpdateService
+                Resource: !Ref Service
+  # CloudWatch related permissions are not require at the moment
+  #              - Effect: Allow
+  #                Action:
+  #                  - cloudwatch:DescribeAlarms
+  #                  - cloudwatch:GetMetricStatistics
+  #                  - cloudwatch:PutMetricAlarm
+  #                  - cloudwatch:DeleteAlarms
+  #                Resource: '*'
+  ScalableTarget:
+    Type: AWS::ApplicationAutoScaling::ScalableTarget
+    Properties:
+      MinCapacity: 1
+      MaxCapacity: !Ref MaxContainers
+      ResourceId:
+        Fn::Join:
+          - '/'
+          - - service
+            - !Ref EcsCluster
+            - !GetAtt [ Service, Name ]
+      ScalableDimension: ecs:service:DesiredCount
+      ServiceNamespace: ecs
+      RoleARN: !GetAtt [ AutoScalingRole, Arn ]
+  ScaleUpPolicy:
+    Type: AWS::ApplicationAutoScaling::ScalingPolicy
+    Properties:
+      PolicyName:
+        Fn::Join:
+          - '-'
+          - - !GetAtt [ Service, Name ]
+            - up
+      PolicyType: StepScaling
+      # ScalingTargetId property or ResourceId, ScalableDimension and ServiceNamespace properties must be specified, but not both.
+      ScalingTargetId: !Ref ScalableTarget
+      StepScalingPolicyConfiguration:
+        AdjustmentType: ChangeInCapacity
+        Cooldown: 60
+        MetricAggregationType: Average
+        StepAdjustments:
+          - MetricIntervalLowerBound: 0
+            ScalingAdjustment: 1
+  ScaleDownPolicy:
+    Type: AWS::ApplicationAutoScaling::ScalingPolicy
+    Properties:
+      PolicyName:
+        Fn::Join:
+          - '-'
+          - - !GetAtt [ Service, Name ]
+            - down
+      PolicyType: StepScaling
+      ScalingTargetId: !Ref ScalableTarget
+      StepScalingPolicyConfiguration:
+        AdjustmentType: ChangeInCapacity
+        Cooldown: 60
+        MetricAggregationType: Average
+        StepAdjustments:
+          - MetricIntervalUpperBound: 0
+            ScalingAdjustment: -1
+
+  # ------------------------------------------------------------#
+  # Database
+  # ------------------------------------------------------------#
 
   DbSecurityGroup:
     Type: AWS::EC2::SecurityGroup
