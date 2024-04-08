@@ -14,8 +14,11 @@ export class MembersService {
 	) {
 	}
 
-	create(createMemberDto: CreateMemberDto) {
-		return 'This action adds a new member'
+	async create(dto: CreateMemberDto) {
+		const member = new Member()
+		Object.assign(member, dto)
+
+		return await this.memberRepository.save(member)
 	}
 
 	async findAll() {
