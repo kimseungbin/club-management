@@ -9,6 +9,10 @@ Parameters:
     AllowedPattern: "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})"
     Default: 10.0.0.0/16
     Description: The CIDR block of the VPC.
+  AppContainerName:
+    Type: String
+    Description: The name of the application container that will be created.
+    Default: club
   ECRRepositoryURI:
     Type: String
     Description: The URI of the ECR repository. If it is not provided, then Cfn creates new ECR Repository resource.
@@ -422,7 +426,7 @@ Resources:
         - FARGATE
       NetworkMode: awsvpc
       ContainerDefinitions:
-        - Name: !Ref ProjectName
+        - Name: !Ref AppContainerName
           Image:
             # If Repository URI is blank, use newly created Repository resource. If not, then use provided URI.
             Fn::If:
@@ -881,6 +885,9 @@ Resources:
       Environment:
         ComputeType: BUILD_GENERAL1_SMALL
         EnvironmentVariables:
+          - Name: CONTAINER_NAME
+            Type: PLAINTEXT
+            Value: !Ref AppContainerName
           - Name: ECR_LOGIN_URL
             Type: PLAINTEXT
             Value: !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com
