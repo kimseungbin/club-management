@@ -783,7 +783,11 @@ Resources:
             Value: !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com
           - Name: ECR_REPOSITORY_URI
             Type: PLAINTEXT
-            Value: !GetAtt [ EcrRepository, RepositoryUri ]
+            Value:
+              Fn::If:
+                - IsECRRepositoryURIBlank
+                - !GetAtt [ EcrRepository, RepositoryUri ]
+                - IsECRRepositoryURIBlank
         Image: aws/codebuild/standard:7.0
         Type: LINUX_CONTAINER
       Name: !Ref AWS::StackName
