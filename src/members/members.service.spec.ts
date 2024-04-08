@@ -4,6 +4,7 @@ import { Repository } from 'typeorm'
 import { getRepositoryToken } from '@nestjs/typeorm'
 import { Member } from './entities/member.entity'
 import { NoContentException } from '../common/exceptions/no-content.exception'
+import { CreateMemberDto } from './dto/create-member.dto'
 
 type MockRepository<T = any> = Partial<Record<keyof Repository<T>, jest.Mock>>
 const createMockRepository = <T = any>(): MockRepository<T> => ({
@@ -52,6 +53,20 @@ describe('MembersService', () => {
 				memberRepository.find.mockReturnValue(want)
 
 				const got = await service.findAll()
+				expect(got).toEqual(want)
+			})
+		})
+	})
+
+	describe('create', () => {
+		describe('otherwise', () => {
+			it('should create a new member', async () => {
+				const mockMemberDto = new CreateMemberDto()
+				const want = new Member()
+
+				jest.spyOn(memberRepository, 'save').mockResolvedValue(want)
+
+				const got = await service.create(mockMemberDto)
 				expect(got).toEqual(want)
 			})
 		})
