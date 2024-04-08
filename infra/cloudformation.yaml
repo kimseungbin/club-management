@@ -806,6 +806,7 @@ Resources:
               - Effect: Allow
                 Action:
                   - codebuild:StartBuild
+                  - codebuild:BatchGetBuilds
                 Resource: !GetAtt [ CodeBuildProject, Arn ]
   CodeBuildRole:
     Type: AWS::IAM::Role
@@ -848,13 +849,8 @@ Resources:
                   - ecr:PutImage
                   - ecr:InitiateLayerUpload
                 Resource:
-                  Fn::Sub:
-                    - arn:aws:ecr:${AWS::Region}:${AWS::AccountId}:repository/${EcrRepository}
-                    - EcrRepository:
-                        Fn::If:
-                          - IsECRRepositoryURIBlank
-                          - !Ref EcrRepository
-                          - !Ref ECRRepositoryURI
+                  # Since repository arn cannot be guessed from repository uri, the policy doesn't restrict specific resource.
+                  Fn::Sub: 'arn:aws:ecr:${AWS::Region}:${AWS::AccountId}:repository/*'
               - Effect: Allow
                 Action:
                   - ecr:GetAuthorizationToken
@@ -929,14 +925,29 @@ Resources:
                 FullRepositoryId: !Ref FullRepositoryId
                 BranchName: main
               RunOrder: 1
-        - Name: ManualApproval # Dummy stage to test the previous stage.
+        - Name: Build
           Actions:
-            - Name: ManualApproval
+            - Name: BuildDockerImage
               ActionTypeId:
-                Category: Approval
+                Category: Build
                 Owner: AWS
-                Provider: Manual
+                Provider: CodeBuild
                 Version: 1
+              Configuration:
+                ProjectName: !Ref CodeBuildProject
+              InputArtifacts:
+                - Name: SourceArtifact
+              OutputArtifacts:
+                - Name: BuildArtifact
+              RunOrder: 1
+      #        - Name: ManualApproval # Dummy stage to test the previous stage.
+      #          Actions:
+      #            - Name: ManualApproval
+      #              ActionTypeId:
+      #                Category: Approval
+      #                Owner: AWS
+      #                Provider: Manual
+      #                Version: 1
       Triggers:
         - ProviderType: CodeStarSourceConnection
           GitConfiguration:
@@ -944,6 +955,8 @@ Resources:
               - FilePaths:
                   Includes:
                     - 'src/**'
+                  Excludes:
+                    - "**/*.spec.ts"
                 Branches:
                   Includes:
                     - main
