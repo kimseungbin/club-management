@@ -1,3 +1,9 @@
+# Club Management
+
+This repository serves as a showcase of proficiency in AWS Cloud Engineering and NestJS Backend development.
+
+![Architecture Diagram](./infra/cloub-management.drawio.png)
+
 # How to Run
 
 To run locally, use Docker Compose.
