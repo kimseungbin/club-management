@@ -15,8 +15,7 @@ export class MembersService {
 	}
 
 	async create(dto: CreateMemberDto) {
-		const member = new Member()
-		Object.assign(member, dto)
+		const member = this.memberRepository.create(dto)
 
 		return await this.memberRepository.save(member)
 	}
