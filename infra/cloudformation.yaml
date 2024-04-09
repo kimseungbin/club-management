@@ -794,10 +794,9 @@ Resources:
               - Effect: Allow
                 Action:
                   - ecs:*
-                Resource:
-                  Fn::Sub:
-                    - "arn:aws:ecs:${AWS::Region}:${AWS::AccountId}:service/${EcsServiceName}"
-                    - EcsServiceName: !Ref Service
+                Resource: !GetAtt [ Service, ServiceArn ]
+                # todo refactor this by reducing range of allowed resource.
+              #                Resource: '*'
               - Effect: Allow
                 Action:
                   - codestar-connections:UseConnection
