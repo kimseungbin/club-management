@@ -6,6 +6,8 @@ import { Member } from './entities/member.entity'
 import { NoContentException } from '../common/exceptions/no-content.exception'
 import { CreateMemberDto } from './dto/create-member.dto'
 import { DuplicateItemException } from '../common/exceptions/duplicate-item.exception'
+import { ConfigModule } from '@nestjs/config'
+import databaseConfig from '../configs/database.config'
 
 type MockRepository<T = any> = Partial<Record<keyof Repository<T>, jest.Mock>>
 const createMockRepository = <T = any>(): MockRepository<T> => ({
@@ -23,6 +25,7 @@ describe('MembersService', () => {
 
 	beforeEach(async () => {
 		const module: TestingModule = await Test.createTestingModule({
+			imports: [ConfigModule.forFeature(databaseConfig)],
 			providers: [
 				MembersService,
 				{
@@ -61,6 +64,10 @@ describe('MembersService', () => {
 	})
 
 	describe('create', () => {
+		describe('when invalid value is inserted', () => {
+			// todo test with phone
+			it.todo('should throw an error')
+		})
 		describe('when duplicate member exists', () => {
 			describe('when using Postgres', () => {
 				it('should throw a DuplicateMemberException', async () => {
@@ -69,6 +76,7 @@ describe('MembersService', () => {
 					const duplicateError: any = new Error()
 
 					duplicateError.code = '23505'
+					duplicateError.detail = 'Key (duplicate_field)=(value) already exists.' // This part is tested in DuplicateItemException's own test.
 					jest.spyOn(memberRepository, 'save').mockRejectedValueOnce(duplicateError)
 
 					await expect(service.create(mockMemberDto)).rejects.toThrow(DuplicateItemException)
