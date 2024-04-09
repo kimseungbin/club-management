@@ -5,6 +5,7 @@ import { getRepositoryToken } from '@nestjs/typeorm'
 import { Member } from './entities/member.entity'
 import { NoContentException } from '../common/exceptions/no-content.exception'
 import { CreateMemberDto } from './dto/create-member.dto'
+import { DuplicateItemException } from '../common/exceptions/duplicate-item.exception'
 
 type MockRepository<T = any> = Partial<Record<keyof Repository<T>, jest.Mock>>
 const createMockRepository = <T = any>(): MockRepository<T> => ({
@@ -60,6 +61,20 @@ describe('MembersService', () => {
 	})
 
 	describe('create', () => {
+		describe('when duplicate member exists', () => {
+			describe('when using Postgres', () => {
+				it('should throw a DuplicateMemberException', async () => {
+					const mockMemberDto = new CreateMemberDto()
+
+					const duplicateError: any = new Error()
+
+					duplicateError.code = '23505'
+					jest.spyOn(memberRepository, 'save').mockRejectedValueOnce(duplicateError)
+
+					await expect(service.create(mockMemberDto)).rejects.toThrow(DuplicateItemException)
+				})
+			})
+		})
 		describe('otherwise', () => {
 			it('should create a new member', async () => {
 				const mockMemberDto = new CreateMemberDto()
