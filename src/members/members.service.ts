@@ -30,7 +30,6 @@ export class MembersService {
 		try {
 			return await this.memberRepository.save(member)
 		} catch (e) {
-			console.dir(e)
 			this.handleExceptions(e)
 		}
 	}
@@ -58,7 +57,6 @@ export class MembersService {
 
 	private handleExceptions(error: DatabaseError) {
 		if (this.databaseConfiguration.type === 'postgres') {
-			console.log(error)
 			// todo don't use magic string
 			if (error.code === '23505') {
 				const { duplicateField, value } = this.extractDuplicateFieldAndValue(error.detail)
