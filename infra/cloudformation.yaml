@@ -456,10 +456,7 @@ Resources:
             # If Repository URI is blank, use newly created Repository resource. If not, then use provided URI.
             Fn::If:
               - IsECRRepositoryURIBlank
-              - Fn::Join:
-                  - ':'
-                  - - !GetAtt [ EcrRepository, RepositoryUri ]
-                    - latest
+              - !GetAtt [ EcrRepository, RepositoryUri ]
               - !Ref ECRRepositoryURI
           LogConfiguration:
             LogDriver: awslogs
