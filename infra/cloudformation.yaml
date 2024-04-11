@@ -388,6 +388,28 @@ Resources:
             Host: "#{host}"
             Path: "/#{path}"
             Query: "#{query}"
+  ListenerRule:
+    Type: AWS::ElasticLoadBalancingV2::ListenerRule
+    Properties:
+      ListenerArn: !Ref HttpsListener
+      Priority: 1
+      Conditions:
+        - Field: path-pattern
+          Values:
+            - /api
+            - /api/*
+      Actions:
+        - Type: authenticate-cognito
+          Order: 1
+          AuthenticateCognitoConfig:
+            OnUnauthenticatedRequest: authenticate # default
+            UserPoolArn: !GetAtt [ UserPool, Arn ]
+            UserPoolClientId: !GetAtt [ UserPoolClient, ClientId ]
+            UserPoolDomain: !Ref UserPoolDomain
+        - Type: forward
+          Order: 2
+          TargetGroupArn: !Ref TargetGroup
+
   # Execution role gives the ECs container agent the needed permissions to make AWs API calls.
   # These permissions are necessary for the agent to, for instance, pull a Docker container image from ECR, or to publish logs to CloudWatch
   ExecutionRole:
@@ -632,17 +654,20 @@ Resources:
       UserPoolId: !Ref UserPool
       CallbackURLs:
         - 'https://www.snle.net'
+        - 'https://www.snle.net/oauth2/idpresponse' # Default redirected URL when ALB Listener authentication fails.
       LogoutURLs:
         - 'https://www.snle.net'
+        - 'https://www.snle.net/oauth2/idpresponse'
       AllowedOAuthFlows:
         - 'implicit'
+        - 'code'
       AllowedOAuthScopes:
         - 'email'
         - 'openid'
       SupportedIdentityProviders:
         - 'COGNITO'
       AllowedOAuthFlowsUserPoolClient: true
-      GenerateSecret: false # enabling this will break the frontend sign in
+      GenerateSecret: true # enabling this will break the frontend sign in
       TokenValidityUnits:
         IdToken: days
         AccessToken: days
