@@ -16,7 +16,7 @@ Parameters:
   ECRRepositoryURI:
     Type: String
     Description: The URI of the ECR repository. If it is not provided, then Cfn creates new ECR Repository resource.
-    Default: ""
+    Default: "427620853867.dkr.ecr.ap-northeast-2.amazonaws.com/main-ecrrepository-dxqwy2qsswxk"
   MaxContainers:
     Type: Number
     Description: The maximum number of containers that the auto-scaling policy is allowed to deploy.
@@ -26,12 +26,15 @@ Parameters:
     Description: The name of the DNS zone e.g., domain.com
     AllowedPattern: "(?=.+)(?=^.{1,253}$)(^(((?!-)[a-zA-Z0-9-]{0,62}[a-zA-Z0-9])\\.)*((?!-)[a-zA-Z0-9]{1,63}))$"
     ConstraintDescription: Must be a valid DNS zone name.
+    Default: snle.net
   HostedZoneId:
     Type: String
     Description: The ID of the DNS zone.
+    Default: Z00545221MDUPHWC78XOC
   CognitoCustomDomainCertificateArn:
     Type: String
     Description: The ARN of Cognito Custom Domain Certificate created in us-east-1 region. It is created in that region because all certificates using CloudFront must be in that region.
+    Default: arn:aws:acm:us-east-1:427620853867:certificate/6922ed29-76e9-4e5b-8bea-ef151fc4b99e
   CognitoCustomSubDomain:
     Type: String
     Description: The custom domain name for Cognito. Suggest auth.[HOSTED_ZONE_NAME] e.g., auth.domain.com
