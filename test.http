@@ -1,0 +1,7 @@
+### Send POST request with json body
+POST localhost:3000/api/members
+Content-Type: application/json
+
+{
+  "phone": "01190277906"
+}
